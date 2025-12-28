@@ -1,0 +1,145 @@
+<resources>
+         <string name="app_name">projectPAM</string>
+        <!-- ================= AUTH : REGISTER ================= -->
+        <string name="title_register">Registrasi Akun</string>
+        <string name="label_full_name">Nama Lengkap</string>
+        <string name="label_email">Email</string>
+        <string name="label_password">Password</string>
+        <string name="label_confirm_password">Konfirmasi Password</string>
+
+        <string name="hint_full_name">Masukkan nama lengkap</string>
+        <string name="hint_email">Masukkan email</string>
+        <string name="hint_password">Masukkan password</string>
+        <string name="hint_confirm_password">Ulangi password</string>
+
+        <string name="btn_register">Daftar</string>
+        <string name="text_to_login">Sudah punya akun? Login</string>
+
+        <string name="error_name_empty">Nama tidak boleh kosong</string>
+        <string name="error_email_invalid">Email tidak valid</string>
+        <string name="error_password_length">Password minimal 8 karakter</string>
+        <string name="error_password_not_match">Password dan konfirmasi password tidak sama</string>
+
+        <string name="register_success">Registrasi berhasil</string>
+        <string name="register_failed">Registrasi gagal, silakan coba lagi</string>
+
+
+        <!-- ================= AUTH : LOGIN ================= -->
+        <string name="title_login">Login</string>
+        <string name="btn_login">Login</string>
+        <string name="text_to_register">Belum punya akun? Daftar</string>
+
+        <string name="login_success">Login berhasil</string>
+        <string name="login_failed">Email atau password salah</string>
+        <string name="account_not_found">Akun tidak ditemukan</string>
+
+
+        <!-- ================= HOME : PRODUCT LIST ================= -->
+        <string name="title_home">Daftar Produk</string>
+        <string name="hint_search">Cari produk...</string>
+        <string name="hint_search_category">Cari berdasarkan nama atau kategori</string>
+
+        <string name="label_price">Harga</string>
+        <string name="label_stock">Stok</string>
+        <string name="stock_available">Stok tersedia</string>
+        <string name="stock_empty">Stok habis</string>
+
+        <string name="empty_product">Produk tidak tersedia</string>
+        <string name="product_not_found">Tidak ada produk yang sesuai</string>
+
+
+        <!-- ================= DETAIL PRODUCT ================= -->
+        <string name="title_detail_product">Detail Produk</string>
+        <string name="label_description">Deskripsi</string>
+
+        <string name="btn_add_to_cart">Tambah ke Keranjang</string>
+
+        <string name="add_cart_success">Produk berhasil ditambahkan ke keranjang</string>
+        <string name="add_cart_failed">Stok tidak mencukupi</string>
+
+
+        <!-- ================= CART ================= -->
+        <string name="title_cart">Keranjang Belanja</string>
+        <string name="label_quantity">Jumlah</string>
+        <string name="label_subtotal">Subtotal</string>
+        <string name="label_total_price">Total Harga</string>
+
+        <string name="btn_delete">Hapus</string>
+        <string name="btn_checkout">Checkout</string>
+
+        <string name="cart_empty">Keranjang kosong</string>
+        <string name="cart_item_deleted">Produk berhasil dihapus dari keranjang</string>
+
+
+        <!-- ================= CHECKOUT ================= -->
+        <string name="title_checkout">Checkout</string>
+        <string name="label_order_summary">Ringkasan Pesanan</string>
+        <string name="label_total_payment">Total Pembayaran</string>
+
+        <string name="label_payment_method">Pilih Metode Pembayaran</string>
+        <string name="payment_bank">Transfer Bank</string>
+        <string name="payment_ewallet">E-Wallet</string>
+        <string name="payment_cod">COD (Bayar di Tempat)</string>
+
+        <string name="btn_pay_now">Bayar Sekarang</string>
+
+        <string name="checkout_success">Pesanan berhasil dibuat</string>
+        <string name="payment_success">Pembayaran berhasil</string>
+        <string name="payment_failed">Pembayaran gagal</string>
+        <string name="checkout_error">Terjadi kesalahan saat checkout</string>
+
+
+        <!-- ================= ORDER STATUS ================= -->
+        <string name="title_order_status">Status Pesanan</string>
+        <string name="label_order_date">Tanggal Pesanan</string>
+        <string name="label_order_status">Status</string>
+
+        <string name="status_packed">Dikemas</string>
+        <string name="status_shipped">Dikirim</string>
+        <string name="status_completed">Selesai</string>
+
+        <string name="order_empty">Belum ada pesanan</string>
+
+
+        <!-- ================= LOGOUT USER ================= -->
+        <string name="logout_title">Konfirmasi Logout</string>
+        <string name="logout_message">Apakah Anda yakin ingin logout?</string>
+        <string name="btn_yes">Ya</string>
+        <string name="btn_cancel">Batal</string>
+        <string name="logout_success">Logout berhasil</string>
+
+
+        <!-- ================= ADMIN : LOGIN ================= -->
+        <string name="title_admin_login">Login Admin</string>
+        <string name="label_admin_email">Email Admin</string>
+        <string name="label_admin_password">Password</string>
+
+        <string name="admin_login_success">Login admin berhasil</string>
+        <string name="admin_login_failed">Email atau password admin salah</string>
+
+
+        <!-- ================= ADMIN : MANAGE PRODUCT ================= -->
+        <string name="title_manage_product">Kelola Produk</string>
+        <string name="btn_add_product">Tambah Produk</string>
+        <string name="btn_edit_product">Edit Produk</string>
+        <string name="btn_delete_product">Hapus Produk</string>
+        <string name="btn_save">Simpan</string>
+
+        <string name="product_add_success">Produk berhasil ditambahkan</string>
+        <string name="product_update_success">Produk berhasil diperbarui</string>
+        <string name="product_delete_success">Produk berhasil dihapus</string>
+
+
+        <!-- ================= ADMIN : MANAGE ORDER ================= -->
+        <string name="title_manage_order">Kelola Pesanan</string>
+        <string name="label_order_detail">Detail Pesanan</string>
+        <string name="btn_update_status">Update Status</string>
+
+        <string name="order_update_success">Status pesanan berhasil diperbarui</string>
+
+
+        <!-- ================= ADMIN : LOGOUT ================= -->
+        <string name="admin_logout_message">Apakah Anda yakin ingin keluar dari dashboard?</string>
+        <string name="admin_logout_success">Logout admin berhasil</string>
+
+</resources>
