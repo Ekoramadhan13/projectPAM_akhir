@@ -26,7 +26,8 @@ import com.example.projectpam.uicontroller.viewmodel.AuthState
 @Composable
 fun HalamanRegister(
     viewModel: AuthViewModel,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
+    onBack: () -> Unit
 ) {
     val authState by viewModel.authState.collectAsState()
 

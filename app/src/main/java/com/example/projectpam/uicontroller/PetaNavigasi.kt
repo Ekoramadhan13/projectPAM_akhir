@@ -8,26 +8,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.projectpam.modeldata.Product
 import com.example.projectpam.repositori.ProductRepository
+import com.example.projectpam.repositori.ProductUserRepository
 import com.example.projectpam.uicontroller.route.DestinasiNavigasi
 import com.example.projectpam.uicontroller.view.*
-
-import com.example.projectpam.uicontroller.viewmodel.AuthViewModel
-import com.example.projectpam.uicontroller.viewmodel.AdminProductViewModel
+import com.example.projectpam.uicontroller.viewmodel.*
+import com.example.projectpam.apiservice.ServiceApiEcommerce
+import com.example.projectpam.utils.SessionManager
 
 @Composable
 fun EcommerceApp(
-    navController: NavHostController = rememberNavController(),
+    navController: NavHostController = androidx.navigation.compose.rememberNavController(),
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel,
-    productRepository: ProductRepository
+    productRepository: ProductRepository,
+    sessionManager: SessionManager
 ) {
     HostNavigasi(
         navController = navController,
         authViewModel = authViewModel,
         productRepository = productRepository,
+        sessionManager = sessionManager,
         modifier = modifier
     )
 }
@@ -37,10 +39,18 @@ fun HostNavigasi(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     productRepository: ProductRepository,
+    sessionManager: SessionManager,
     modifier: Modifier = Modifier
 ) {
+    // ================== ADMIN ==================
     val adminProductViewModel: AdminProductViewModel = viewModel(
         factory = AdminProductViewModelFactory(productRepository)
+    )
+
+    // ================== USER ==================
+    val userProductRepository = ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
+    val productUserViewModel: ProductUserViewModel = viewModel(
+        factory = ProductUserViewModelFactory(userProductRepository)
     )
 
     NavHost(
@@ -74,13 +84,16 @@ fun HostNavigasi(
                     navController.navigate(DestinasiNavigasi.LOGIN) {
                         popUpTo(DestinasiNavigasi.REGISTER) { inclusive = true }
                     }
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
         // ================= HOME =================
         composable(DestinasiNavigasi.HOME) {
-            HalamanHome()
+            HalamanHome(
+                onNavigateToProducts = { navController.navigate(DestinasiNavigasi.HOME_PRODUCT) }
+            )
         }
 
         // ================= ADMIN MANAGE PRODUCT =================
@@ -90,6 +103,12 @@ fun HostNavigasi(
                 onNavigateToForm = { product ->
                     navController.currentBackStackEntry?.savedStateHandle?.set("product", product)
                     navController.navigate(DestinasiNavigasi.FORM_PRODUCT)
+                },
+                onBackToLogin = {
+                    // Kembali ke halaman login dan hapus stack ManageProduct
+                    navController.navigate(DestinasiNavigasi.LOGIN) {
+                        popUpTo(DestinasiNavigasi.MANAGE_PRODUCT) { inclusive = true }
+                    }
                 }
             )
         }
@@ -106,16 +125,52 @@ fun HostNavigasi(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        // ================= USER HOME PRODUCT =================
+        composable(DestinasiNavigasi.HOME_PRODUCT) {
+            HalamanProductUser(
+                productUserViewModel = productUserViewModel,
+                onProductClick = { product ->
+                    navController.navigate("${DestinasiNavigasi.HOME_PRODUCT}_detail/${product.product_id}")
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ================= USER DETAIL PRODUCT =================
+        composable("${DestinasiNavigasi.HOME_PRODUCT}_detail/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull()
+            if (productId != null) {
+                HalamanDetail(
+                    productId = productId,
+                    viewModel = productUserViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+        }
     }
 }
 
-// ================= FACTORY VIEWMODEL =================
+// ================== FACTORY ==================
 class AdminProductViewModelFactory(
     private val repository: ProductRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AdminProductViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return AdminProductViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class ProductUserViewModelFactory(
+    private val repository: ProductUserRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ProductUserViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ProductUserViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

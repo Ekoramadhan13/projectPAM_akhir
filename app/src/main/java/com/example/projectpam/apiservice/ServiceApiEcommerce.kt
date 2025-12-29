@@ -13,13 +13,17 @@ import retrofit2.converter.gson.GsonConverterFactory
 interface ServiceApiEcommerce {
 
     // ================= AUTH =================
-    @POST("auth/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
+    @POST("api/auth/login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): LoginResponse
 
-    @POST("auth/register")
-    suspend fun register(@Body request: RegisterRequest)
+    @POST("api/auth/register")
+    suspend fun register(
+        @Body request: RegisterRequest
+    )
 
-    // ================= PRODUCTS =================
+    // ================= ADMIN PRODUCTS =================
     @GET("api/products")
     suspend fun getAllProducts(): List<Product>
 
@@ -54,15 +58,34 @@ interface ServiceApiEcommerce {
         @Header("Authorization") token: String
     )
 
+    // ================= USER PRODUCTS (HOMEPAGE) =================
+
+    // 🔹 Homepage Produk
+    @GET("api/user/products")
+    suspend fun getUserProducts(): List<Product>
+
+    // 🔹 Detail Produk
+    @GET("api/user/products/{id}")
+    suspend fun getUserProductDetail(
+        @Path("id") id: Int
+    ): Product
+
+    // 🔹 Search Produk (nama + kategori)
+    @GET("api/user/products/search")
+    suspend fun searchUserProducts(
+        @Query("q") query: String,
+        @Query("category") category: String?
+    ): List<Product>
+
     companion object {
         private const val BASE_URL = "http://10.0.2.2:3000/"
 
         fun create(): ServiceApiEcommerce {
-            val retrofit = Retrofit.Builder()
+            return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-            return retrofit.create(ServiceApiEcommerce::class.java)
+                .create(ServiceApiEcommerce::class.java)
         }
     }
 }

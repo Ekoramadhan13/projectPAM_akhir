@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
                     EcommerceApp(
                         authViewModel = authViewModel,
                         productRepository = productRepository,
+                        sessionManager = sessionManager,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
