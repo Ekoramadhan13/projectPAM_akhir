@@ -12,12 +12,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 interface ServiceApiEcommerce {
 
+    // ================= AUTH =================
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest)
 
+    // ================= PRODUCTS =================
     @GET("api/products")
     suspend fun getAllProducts(): List<Product>
 
@@ -29,7 +31,8 @@ interface ServiceApiEcommerce {
         @Part("price") price: RequestBody,
         @Part("stock") stock: RequestBody,
         @Part("category") category: RequestBody,
-        @Part image: MultipartBody.Part?
+        @Part image: MultipartBody.Part?,
+        @Header("Authorization") token: String
     ): Product
 
     @Multipart
@@ -41,14 +44,18 @@ interface ServiceApiEcommerce {
         @Part("price") price: RequestBody,
         @Part("stock") stock: RequestBody,
         @Part("category") category: RequestBody,
-        @Part image: MultipartBody.Part?
+        @Part image: MultipartBody.Part?,
+        @Header("Authorization") token: String
     ): Product
 
     @DELETE("api/products/{id}")
-    suspend fun deleteProduct(@Path("id") id: Int)
+    suspend fun deleteProduct(
+        @Path("id") id: Int,
+        @Header("Authorization") token: String
+    )
 
     companion object {
-        private const val BASE_URL = "http://10.0.2.2:3000/api/"
+        private const val BASE_URL = "http://10.0.2.2:3000/"
 
         fun create(): ServiceApiEcommerce {
             val retrofit = Retrofit.Builder()

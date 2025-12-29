@@ -43,24 +43,30 @@ fun HalamanManageProduct(
                         Text("Stok: ${product.stock}")
                         Text("Kategori: ${product.category}")
 
-                        product.image_url?.let {
-                            if (it.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Image(
-                                    painter = rememberAsyncImagePainter(it),
-                                    contentDescription = "Gambar Produk",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(150.dp)
-                                )
-                            }
+                        product.image_url.takeIf { it.isNotEmpty() }?.let { url ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Image(
+                                painter = rememberAsyncImagePainter(url),
+                                contentDescription = "Gambar Produk",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(150.dp)
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Row {
-                            Button(onClick = { onNavigateToForm(product) }) { Text("Edit") }
+                            Button(onClick = { onNavigateToForm(product) }) {
+                                Text("Edit")
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = { viewModel.deleteProduct(product.product_id) }) { Text("Hapus") }
+                            Button(onClick = {
+                                product.product_id?.let { id ->
+                                    if (id > 0) viewModel.deleteProduct(id)
+                                }
+                            }) {
+                                Text("Hapus")
+                            }
                         }
                     }
                 }

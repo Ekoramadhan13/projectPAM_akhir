@@ -1,10 +1,11 @@
 package com.example.projectpam.modeldata
 
-import kotlinx.serialization.Serializable
+import java.io.Serializable
+import kotlinx.serialization.Serializable as KSerializable
 
-@Serializable
+@KSerializable
 data class Product(
-    val product_id: Int = 0,
+    val product_id: Int? = null, // nullable supaya aman
     val name: String = "",
     val description: String = "",
     val price: Double = 0.0,
@@ -13,4 +14,4 @@ data class Product(
     val image_url: String = "",
     val created_at: String = "",
     val updated_at: String = ""
-)
+) : Serializable

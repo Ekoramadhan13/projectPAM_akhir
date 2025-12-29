@@ -7,60 +7,44 @@ import com.example.projectpam.repositori.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
+import okhttp3.MultipartBody
 
 class AdminProductViewModel(private val repository: ProductRepository) : ViewModel() {
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
-    val products: StateFlow<List<Product>> get() = _products
+    val products: StateFlow<List<Product>> = _products
 
     private val _message = MutableStateFlow("")
-    val message: StateFlow<String> get() = _message
+    val message: StateFlow<String> = _message
 
-    // ====================== Load Semua Produk ======================
     fun loadProducts() {
         viewModelScope.launch {
-            try {
-                _products.value = repository.getAllProducts()
-            } catch (e: Exception) {
-                _message.value = "Gagal memuat produk: ${e.localizedMessage}"
-            }
+            try { _products.value = repository.getAllProducts() }
+            catch (e: Exception) { _message.value = "Gagal memuat produk: ${e.localizedMessage}" }
         }
     }
 
-    // ====================== Tambah / Update Produk via Multipart ======================
     fun addOrUpdateProductMultipart(
         name: String,
         description: String,
         price: Double,
         stock: Int,
         category: String,
-        imageFile: File?,
+        imagePart: MultipartBody.Part?,
         isUpdate: Boolean,
-        productId: Int = 0
+        productId: Int? = null
     ) {
         viewModelScope.launch {
             try {
                 if (isUpdate) {
-                    repository.updateProductMultipart(
-                        id = productId,
-                        name = name,
-                        description = description,
-                        price = price,
-                        stock = stock,
-                        category = category,
-                        imageFile = imageFile
-                    )
+                    if (productId == null || productId <= 0) {
+                        _message.value = "ID produk tidak valid"
+                        return@launch
+                    }
+                    repository.updateProductMultipart(productId, name, description, price, stock, category, imagePart)
                     _message.value = "Produk berhasil diperbarui"
                 } else {
-                    repository.addProductMultipart(
-                        name = name,
-                        description = description,
-                        price = price,
-                        stock = stock,
-                        category = category,
-                        imageFile = imageFile
-                    )
+                    repository.addProductMultipart(name, description, price, stock, category, imagePart)
                     _message.value = "Produk berhasil ditambahkan"
                 }
                 loadProducts()
@@ -70,7 +54,6 @@ class AdminProductViewModel(private val repository: ProductRepository) : ViewMod
         }
     }
 
-    // ====================== Hapus Produk ======================
     fun deleteProduct(id: Int) {
         viewModelScope.launch {
             try {

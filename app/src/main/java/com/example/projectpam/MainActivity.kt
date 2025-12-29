@@ -16,6 +16,7 @@ import com.example.projectpam.repositori.ProductRepository
 import com.example.projectpam.ui.theme.ProjectPAMTheme
 import com.example.projectpam.uicontroller.EcommerceApp
 import com.example.projectpam.uicontroller.viewmodel.AuthViewModel
+import com.example.projectpam.utils.SessionManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,9 +24,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ProjectPAMTheme {
-                val authViewModel: AuthViewModel = viewModel()
+                val sessionManager = SessionManager(this)
+
+                val authViewModel: AuthViewModel = viewModel(
+                    factory = AuthViewModel.Factory(sessionManager)
+                )
+
                 val apiService = ServiceApiEcommerce.create()
-                val productRepository = ProductRepository(apiService)
+                val productRepository = ProductRepository(apiService, sessionManager)
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     EcommerceApp(
@@ -38,6 +44,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 
 @Composable
