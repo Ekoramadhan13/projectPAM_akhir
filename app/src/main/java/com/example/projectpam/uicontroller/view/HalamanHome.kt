@@ -9,23 +9,42 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalamanHome(
-    onNavigateToProducts: () -> Unit // tambahkan ini
+    onNavigateToProducts: () -> Unit, // navigasi ke halaman produk
+    onBackToLogin: () -> Unit         // navigasi kembali ke login
 ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Beranda") })
         }
     ) { padding ->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Selamat datang di E-Commerce Buah & Sayur", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Selamat datang di E-Commerce Buah & Sayur",
+                style = MaterialTheme.typography.titleLarge
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = onNavigateToProducts) { // panggil callback navigasi
+            Button(
+                onClick = onNavigateToProducts,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text("Lihat Produk")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Tombol kembali ke login
+            OutlinedButton(
+                onClick = onBackToLogin,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Keluar / Kembali ke Login")
             }
         }
     }

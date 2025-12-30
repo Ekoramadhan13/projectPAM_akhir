@@ -1,8 +1,6 @@
 package com.example.projectpam.uicontroller.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,11 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,15 +25,14 @@ fun HalamanProductUser(
     onProductClick: (Product) -> Unit,
     onBack: () -> Unit
 ) {
-    // State untuk query search
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
-    // Load produk awal saat halaman muncul
+    // Load data sekali saat screen pertama muncul
     LaunchedEffect(Unit) {
         productUserViewModel.loadProducts()
     }
 
-    val products = productUserViewModel.products.collectAsState().value
+    val products by productUserViewModel.products.collectAsState()
 
     Scaffold(
         topBar = {
@@ -46,80 +40,101 @@ fun HalamanProductUser(
                 title = { Text("Daftar Produk") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
                     }
                 }
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
 
-            // ===== Input Search =====
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+
+            /* ===== SEARCH ===== */
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { query ->
-                    searchQuery = query
-                    productUserViewModel.searchProducts(query) // panggil search
+                onValueChange = {
+                    searchQuery = it
+                    productUserViewModel.searchProducts(it)
                 },
-                label = { Text("Search Produk") },
+                label = { Text("Cari Produk") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(12.dp),
+                singleLine = true
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // ===== List Produk =====
+            /* ===== LIST ===== */
             if (products.isEmpty()) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Tidak ada produk")
+                    Text("Produk tidak ditemukan")
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(products) { product ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable { onProductClick(product) },
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val imageUrl =
-                                    "http://10.0.2.2:3000/uploads/${product.image_url}" // pastikan path benar
-                                Image(
-                                    painter = rememberAsyncImagePainter(imageUrl),
-                                    contentDescription = product.name,
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .padding(end = 8.dp),
-                                    contentScale = ContentScale.Crop
-                                )
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = product.name,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Text(text = "Harga: Rp ${product.price}")
-                                    Text(text = "Stok: ${product.stock}")
-                                    Text(text = "Kategori: ${product.category}")
-                                }
-                            }
-                        }
+                    items(products, key = { it.product_id ?: it.hashCode() }) { product ->
+                        ProductItem(
+                            product = product,
+                            onClick = { onProductClick(product) }
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProductItem(
+    product: Product,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            /* ===== IMAGE ===== */
+            if (!product.image_url.isNullOrBlank()) {
+                Image(
+                    painter = rememberAsyncImagePainter(product.image_url),
+                    contentDescription = product.name,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .padding(end = 12.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            /* ===== INFO ===== */
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text("Harga: Rp ${product.price}")
+                Text("Stok: ${product.stock}")
+                Text("Kategori: ${product.category}")
             }
         }
     }

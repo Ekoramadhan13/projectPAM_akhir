@@ -8,23 +8,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.projectpam.apiservice.ServiceApiEcommerce
 import com.example.projectpam.modeldata.Product
 import com.example.projectpam.repositori.ProductRepository
 import com.example.projectpam.repositori.ProductUserRepository
 import com.example.projectpam.uicontroller.route.DestinasiNavigasi
 import com.example.projectpam.uicontroller.view.*
 import com.example.projectpam.uicontroller.viewmodel.*
-import com.example.projectpam.apiservice.ServiceApiEcommerce
 import com.example.projectpam.utils.SessionManager
 
+/* =====================================================
+   ROOT COMPOSABLE (DIPANGGIL DARI MainActivity)
+===================================================== */
 @Composable
 fun EcommerceApp(
-    navController: NavHostController = androidx.navigation.compose.rememberNavController(),
-    modifier: Modifier = Modifier,
     authViewModel: AuthViewModel,
     productRepository: ProductRepository,
-    sessionManager: SessionManager
+    sessionManager: SessionManager,
+    modifier: Modifier = Modifier
 ) {
+    val navController = rememberNavController()
+
     HostNavigasi(
         navController = navController,
         authViewModel = authViewModel,
@@ -34,6 +39,9 @@ fun EcommerceApp(
     )
 }
 
+/* =====================================================
+   HOST NAVIGASI
+===================================================== */
 @Composable
 fun HostNavigasi(
     navController: NavHostController,
@@ -42,13 +50,15 @@ fun HostNavigasi(
     sessionManager: SessionManager,
     modifier: Modifier = Modifier
 ) {
-    // ================== ADMIN ==================
+    // ===== ADMIN =====
     val adminProductViewModel: AdminProductViewModel = viewModel(
         factory = AdminProductViewModelFactory(productRepository)
     )
 
-    // ================== USER ==================
-    val userProductRepository = ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
+    // ===== USER =====
+    val userProductRepository =
+        ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
+
     val productUserViewModel: ProductUserViewModel = viewModel(
         factory = ProductUserViewModelFactory(userProductRepository)
     )
@@ -58,7 +68,8 @@ fun HostNavigasi(
         startDestination = DestinasiNavigasi.LOGIN,
         modifier = modifier
     ) {
-        // ================= LOGIN =================
+
+        /* ================= LOGIN ================= */
         composable(DestinasiNavigasi.LOGIN) {
             HalamanLogin(
                 viewModel = authViewModel,
@@ -72,11 +83,13 @@ fun HostNavigasi(
                         popUpTo(DestinasiNavigasi.LOGIN) { inclusive = true }
                     }
                 },
-                onRegisterClick = { navController.navigate(DestinasiNavigasi.REGISTER) }
+                onRegisterClick = {
+                    navController.navigate(DestinasiNavigasi.REGISTER)
+                }
             )
         }
 
-        // ================= REGISTER =================
+        /* ================= REGISTER ================= */
         composable(DestinasiNavigasi.REGISTER) {
             HalamanRegister(
                 viewModel = authViewModel,
@@ -89,23 +102,56 @@ fun HostNavigasi(
             )
         }
 
-        // ================= HOME =================
+        /* ================= HOME USER ================= */
         composable(DestinasiNavigasi.HOME) {
             HalamanHome(
-                onNavigateToProducts = { navController.navigate(DestinasiNavigasi.HOME_PRODUCT) }
+                onNavigateToProducts = {
+                    navController.navigate(DestinasiNavigasi.HOME_PRODUCT)
+                },
+                onBackToLogin = {
+                    navController.navigate(DestinasiNavigasi.LOGIN) {
+                        popUpTo(DestinasiNavigasi.HOME) { inclusive = true }
+                    }
+                }
             )
         }
 
-        // ================= ADMIN MANAGE PRODUCT =================
+        /* ================= USER PRODUCT ================= */
+        composable(DestinasiNavigasi.HOME_PRODUCT) {
+            HalamanProductUser(
+                productUserViewModel = productUserViewModel,
+                onProductClick = { product ->
+                    navController.navigate(
+                        "${DestinasiNavigasi.HOME_PRODUCT}_detail/${product.product_id}"
+                    )
+                },
+                onBack = {
+                    // ✅ kembali ke HOME
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        /* ================= USER DETAIL ================= */
+        composable("${DestinasiNavigasi.HOME_PRODUCT}_detail/{productId}") {
+            HalamanDetail(
+                productId = it.arguments?.getString("productId")!!.toInt(),
+                viewModel = productUserViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        /* ================= ADMIN MANAGE PRODUCT ================= */
         composable(DestinasiNavigasi.MANAGE_PRODUCT) {
             HalamanManageProduct(
                 viewModel = adminProductViewModel,
                 onNavigateToForm = { product ->
-                    navController.currentBackStackEntry?.savedStateHandle?.set("product", product)
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("product", product)
                     navController.navigate(DestinasiNavigasi.FORM_PRODUCT)
                 },
                 onBackToLogin = {
-                    // Kembali ke halaman login dan hapus stack ManageProduct
                     navController.navigate(DestinasiNavigasi.LOGIN) {
                         popUpTo(DestinasiNavigasi.MANAGE_PRODUCT) { inclusive = true }
                     }
@@ -113,7 +159,7 @@ fun HostNavigasi(
             )
         }
 
-        // ================= ADMIN FORM PRODUCT =================
+        /* ================= ADMIN FORM PRODUCT ================= */
         composable(DestinasiNavigasi.FORM_PRODUCT) {
             val product = navController.previousBackStackEntry
                 ?.savedStateHandle
@@ -125,33 +171,12 @@ fun HostNavigasi(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-
-        // ================= USER HOME PRODUCT =================
-        composable(DestinasiNavigasi.HOME_PRODUCT) {
-            HalamanProductUser(
-                productUserViewModel = productUserViewModel,
-                onProductClick = { product ->
-                    navController.navigate("${DestinasiNavigasi.HOME_PRODUCT}_detail/${product.product_id}")
-                },
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // ================= USER DETAIL PRODUCT =================
-        composable("${DestinasiNavigasi.HOME_PRODUCT}_detail/{productId}") { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull()
-            if (productId != null) {
-                HalamanDetail(
-                    productId = productId,
-                    viewModel = productUserViewModel,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-        }
     }
 }
 
-// ================== FACTORY ==================
+/* =====================================================
+   VIEWMODEL FACTORY
+===================================================== */
 class AdminProductViewModelFactory(
     private val repository: ProductRepository
 ) : ViewModelProvider.Factory {
