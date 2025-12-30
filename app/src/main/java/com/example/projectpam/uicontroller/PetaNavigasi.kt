@@ -2,8 +2,6 @@ package com.example.projectpam.uicontroller
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,16 +9,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.projectpam.apiservice.ServiceApiEcommerce
 import com.example.projectpam.modeldata.Product
-import com.example.projectpam.repositori.ProductRepository
-import com.example.projectpam.repositori.ProductUserRepository
+import com.example.projectpam.repositori.*
 import com.example.projectpam.uicontroller.route.DestinasiNavigasi
 import com.example.projectpam.uicontroller.view.*
 import com.example.projectpam.uicontroller.viewmodel.*
 import com.example.projectpam.utils.SessionManager
 
-/* =====================================================
-   ROOT COMPOSABLE (DIPANGGIL DARI MainActivity)
-===================================================== */
 @Composable
 fun EcommerceApp(
     authViewModel: AuthViewModel,
@@ -29,7 +23,6 @@ fun EcommerceApp(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
-
     HostNavigasi(
         navController = navController,
         authViewModel = authViewModel,
@@ -39,9 +32,6 @@ fun EcommerceApp(
     )
 }
 
-/* =====================================================
-   HOST NAVIGASI
-===================================================== */
 @Composable
 fun HostNavigasi(
     navController: NavHostController,
@@ -50,17 +40,22 @@ fun HostNavigasi(
     sessionManager: SessionManager,
     modifier: Modifier = Modifier
 ) {
-    // ===== ADMIN =====
+
+    // ===== ADMIN VIEWMODEL =====
     val adminProductViewModel: AdminProductViewModel = viewModel(
-        factory = AdminProductViewModelFactory(productRepository)
+        initializer = { AdminProductViewModel(productRepository) }
     )
 
-    // ===== USER =====
-    val userProductRepository =
-        ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
-
+    // ===== USER VIEWMODEL =====
+    val productUserRepository = ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
     val productUserViewModel: ProductUserViewModel = viewModel(
-        factory = ProductUserViewModelFactory(userProductRepository)
+        initializer = { ProductUserViewModel(productUserRepository) }
+    )
+
+    // ===== CART VIEWMODEL =====
+    val cartRepository = CartRepository(ServiceApiEcommerce.create(), sessionManager)
+    val cartViewModel: CartViewModel = viewModel(
+        initializer = { CartViewModel(cartRepository) }
     )
 
     NavHost(
@@ -83,9 +78,7 @@ fun HostNavigasi(
                         popUpTo(DestinasiNavigasi.LOGIN) { inclusive = true }
                     }
                 },
-                onRegisterClick = {
-                    navController.navigate(DestinasiNavigasi.REGISTER)
-                }
+                onRegisterClick = { navController.navigate(DestinasiNavigasi.REGISTER) }
             )
         }
 
@@ -105,9 +98,8 @@ fun HostNavigasi(
         /* ================= HOME USER ================= */
         composable(DestinasiNavigasi.HOME) {
             HalamanHome(
-                onNavigateToProducts = {
-                    navController.navigate(DestinasiNavigasi.HOME_PRODUCT)
-                },
+                onNavigateToProducts = { navController.navigate(DestinasiNavigasi.HOME_PRODUCT) },
+                onNavigateToCart = { navController.navigate(DestinasiNavigasi.CART) }, // tombol keranjang di Home
                 onBackToLogin = {
                     navController.navigate(DestinasiNavigasi.LOGIN) {
                         popUpTo(DestinasiNavigasi.HOME) { inclusive = true }
@@ -116,27 +108,37 @@ fun HostNavigasi(
             )
         }
 
-        /* ================= USER PRODUCT ================= */
+        /* ================= USER PRODUCT LIST ================= */
         composable(DestinasiNavigasi.HOME_PRODUCT) {
             HalamanProductUser(
                 productUserViewModel = productUserViewModel,
                 onProductClick = { product ->
-                    navController.navigate(
-                        "${DestinasiNavigasi.HOME_PRODUCT}_detail/${product.product_id}"
-                    )
+                    navController.navigate("${DestinasiNavigasi.DETAIL_PRODUCT}/${product.product_id}")
                 },
-                onBack = {
-                    // ✅ kembali ke HOME
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() },
+                onGoToCart = { navController.navigate(DestinasiNavigasi.CART) } // optional tombol cart
             )
         }
 
-        /* ================= USER DETAIL ================= */
-        composable("${DestinasiNavigasi.HOME_PRODUCT}_detail/{productId}") {
+        /* ================= USER PRODUCT DETAIL ================= */
+        composable("${DestinasiNavigasi.DETAIL_PRODUCT}/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull() ?: return@composable
             HalamanDetail(
-                productId = it.arguments?.getString("productId")!!.toInt(),
-                viewModel = productUserViewModel,
+                productId = productId,
+                productViewModel = productUserViewModel,
+                cartViewModel = cartViewModel,
+                onBack = { navController.popBackStack() },
+                onGoToCart = { navController.navigate(DestinasiNavigasi.CART) } // navigasi ke cart setelah tambah
+            )
+        }
+
+        /* ================= USER CART ================= */
+        composable(DestinasiNavigasi.CART) {
+            HalamanCart(
+                viewModel = cartViewModel,
+                onCheckout = {
+                    // TODO: navigasi ke halaman Checkout
+                },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -171,32 +173,5 @@ fun HostNavigasi(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-    }
-}
-
-/* =====================================================
-   VIEWMODEL FACTORY
-===================================================== */
-class AdminProductViewModelFactory(
-    private val repository: ProductRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AdminProductViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AdminProductViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
-
-class ProductUserViewModelFactory(
-    private val repository: ProductUserRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ProductUserViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ProductUserViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

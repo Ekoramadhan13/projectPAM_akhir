@@ -1,21 +1,19 @@
 package com.example.projectpam.uicontroller.route
 
 object DestinasiNavigasi {
+
+    // Auth
     const val LOGIN = "login"
     const val REGISTER = "register"
 
-    const val ADMIN_LOGIN = "admin_login"
+    // User
     const val HOME = "home"
+    const val HOME_PRODUCT = "home_product"
+    const val DETAIL_PRODUCT = "detail_product"
+    const val CART = "cart"
 
-    // Tambahan untuk admin
+    // Admin
     const val MANAGE_PRODUCT = "manage_product"
     const val FORM_PRODUCT = "form_product"
     const val MANAGE_ORDER = "manage_order"
-
-
-    const val HOME_PRODUCT = "home_product"
-
-
-
-
 }

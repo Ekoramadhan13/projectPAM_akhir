@@ -8,7 +8,7 @@ data class Product(
     val product_id: Int? = null, // nullable supaya aman
     val name: String = "",
     val description: String = "",
-    val price: Double = 0.0,
+    val price: String = "0.0", // ubah jadi String sesuai backend
     val stock: Int = 0,
     val category: String = "",
     val image_url: String = "",

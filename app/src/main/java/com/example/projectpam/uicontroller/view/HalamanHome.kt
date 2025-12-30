@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HalamanHome(
     onNavigateToProducts: () -> Unit, // navigasi ke halaman produk
+    onNavigateToCart: () -> Unit,     // navigasi ke halaman keranjang
     onBackToLogin: () -> Unit         // navigasi kembali ke login
 ) {
     Scaffold(
@@ -35,6 +36,15 @@ fun HalamanHome(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Lihat Produk")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onNavigateToCart,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Keranjang Saya")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

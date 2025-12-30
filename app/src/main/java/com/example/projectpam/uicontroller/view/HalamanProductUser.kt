@@ -23,7 +23,8 @@ import com.example.projectpam.uicontroller.viewmodel.ProductUserViewModel
 fun HalamanProductUser(
     productUserViewModel: ProductUserViewModel,
     onProductClick: (Product) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onGoToCart: () -> Unit
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
