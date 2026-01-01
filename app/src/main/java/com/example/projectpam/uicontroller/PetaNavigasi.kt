@@ -44,7 +44,7 @@ fun HostNavigasi(
 
     /* ================= VIEWMODEL ================= */
 
-    // ADMIN
+    // ADMIN PRODUCT
     val adminProductViewModel: AdminProductViewModel = viewModel {
         AdminProductViewModel(productRepository)
     }
@@ -61,7 +61,7 @@ fun HostNavigasi(
         CartViewModel(cartRepository)
     }
 
-    // ORDER
+    // ORDER (USER)
     val orderRepository = OrderRepository(api, sessionManager)
     val checkoutViewModel: CheckoutViewModel = viewModel {
         CheckoutViewModel(orderRepository)
@@ -69,6 +69,14 @@ fun HostNavigasi(
     val orderStatusViewModel: OrderStatusViewModel = viewModel {
         OrderStatusViewModel(orderRepository)
     }
+
+    // ORDER (ADMIN)
+    val adminOrderRepository = AdminOrderRepository(api, sessionManager)
+
+    val adminOrderViewModel: AdminOrderViewModel = viewModel {
+        AdminOrderViewModel(adminOrderRepository)
+    }
+
 
     /* ================= NAVIGATION ================= */
 
@@ -188,7 +196,7 @@ fun HostNavigasi(
             )
         }
 
-        /* ============ ORDER STATUS ============ */
+        /* ============ USER ORDER STATUS ============ */
         composable(DestinasiNavigasi.ORDER_STATUS) {
             HalamanStatusOrder(
                 viewModel = orderStatusViewModel,
@@ -211,6 +219,9 @@ fun HostNavigasi(
                         ?.set("product", product)
                     navController.navigate(DestinasiNavigasi.FORM_PRODUCT)
                 },
+                onNavigateToManageOrder = {
+                    navController.navigate(DestinasiNavigasi.MANAGE_ORDER)
+                },
                 onBackToLogin = {
                     navController.navigate(DestinasiNavigasi.LOGIN) {
                         popUpTo(DestinasiNavigasi.MANAGE_PRODUCT) { inclusive = true }
@@ -218,6 +229,7 @@ fun HostNavigasi(
                 }
             )
         }
+
 
         /* ============ ADMIN FORM PRODUCT ============ */
         composable(DestinasiNavigasi.FORM_PRODUCT) {
@@ -229,6 +241,14 @@ fun HostNavigasi(
                 viewModel = adminProductViewModel,
                 product = product,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        /* ============ ADMIN MANAGE ORDER ============ */
+        composable(DestinasiNavigasi.MANAGE_ORDER) {
+            HalamanManageOrder(
+                viewModel = adminOrderViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }

@@ -12,17 +12,30 @@ fun NavGraphBuilder.manageProductNav(
     navController: NavController,
     adminProductViewModel: AdminProductViewModel
 ) {
-    // ================= ADMIN MANAGE PRODUCT =================
+
+    /* =======================================================
+     * ADMIN - MANAGE PRODUCT
+     * ======================================================= */
     composable("manage_product") {
         HalamanManageProduct(
             viewModel = adminProductViewModel,
+
+            // ➕ Tambah / ✏️ Edit Produk
             onNavigateToForm = { product ->
-                // Simpan product yang akan diedit, jika null berarti tambah baru
-                navController.currentBackStackEntry?.savedStateHandle?.set("product", product)
+                navController.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("product", product)
+
                 navController.navigate("form_product")
             },
+
+            // 📦 Kelola Pesanan
+            onNavigateToManageOrder = {
+                navController.navigate("manage_order")
+            },
+
+            // 🚪 Logout / Kembali ke Login
             onBackToLogin = {
-                // Navigasi kembali ke halaman login dan hapus manage_product dari backstack
                 navController.navigate("login") {
                     popUpTo("manage_product") { inclusive = true }
                 }
@@ -30,9 +43,12 @@ fun NavGraphBuilder.manageProductNav(
         )
     }
 
-    // ================= ADMIN FORM PRODUCT =================
+    /* =======================================================
+     * ADMIN - FORM PRODUCT (TAMBAH / EDIT)
+     * ======================================================= */
     composable("form_product") {
-        // Ambil product yang dikirim dari ManageProduct, bisa null untuk tambah produk
+
+        // Ambil data produk dari halaman Manage Product (bisa null)
         val product = navController.previousBackStackEntry
             ?.savedStateHandle
             ?.get<Product>("product")
@@ -40,8 +56,9 @@ fun NavGraphBuilder.manageProductNav(
         HalamanFormProduct(
             viewModel = adminProductViewModel,
             product = product,
+
+            // ⬅️ Kembali ke Manage Product
             onNavigateBack = {
-                // Kembali ke ManageProduct setelah simpan
                 navController.popBackStack()
             }
         )

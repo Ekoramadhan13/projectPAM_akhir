@@ -14,6 +14,8 @@ import com.example.projectpam.modeldata.request.RegisterRequest
 import com.example.projectpam.modeldata.request.AddCartRequest
 import com.example.projectpam.modeldata.request.CheckoutRequest
 import com.example.projectpam.modeldata.request.UpdateCartRequest
+import com.example.projectpam.modeldata.request.UpdateOrderStatusRequest
+import com.example.projectpam.modeldata.response.ApiResponse
 import com.example.projectpam.modeldata.response.CartListResponse
 import com.example.projectpam.modeldata.response.LoginResponse
 import com.example.projectpam.modeldata.response.MessageResponse
@@ -121,6 +123,21 @@ interface ServiceApiEcommerce {
     suspend fun getMyOrders(
         @Header("Authorization") token: String
     ): OrderListResponse
+
+    // =================== ADMIN ORDER ===================
+
+    // GET semua pesanan (Admin)
+    @GET("api/orders/all")
+    suspend fun getAllOrders(
+        @Header("Authorization") token: String
+    ): ApiResponse<List<Order>>
+
+    // UPDATE status pesanan (Admin)
+    @PUT("api/orders/update-status")
+    suspend fun updateOrderStatus(
+        @Header("Authorization") token: String,
+        @Body request: UpdateOrderStatusRequest
+    ): ApiResponse<Order>
 
 
 

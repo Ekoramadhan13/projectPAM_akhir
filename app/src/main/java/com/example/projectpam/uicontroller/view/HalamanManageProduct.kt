@@ -18,6 +18,7 @@ import com.example.projectpam.uicontroller.viewmodel.AdminProductViewModel
 fun HalamanManageProduct(
     viewModel: AdminProductViewModel,
     onNavigateToForm: (Product?) -> Unit,
+    onNavigateToManageOrder: () -> Unit,
     onBackToLogin: () -> Unit
 ) {
     val products by viewModel.products.collectAsState()
@@ -32,6 +33,7 @@ fun HalamanManageProduct(
             TopAppBar(title = { Text("Manage Produk (Admin)") })
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -39,7 +41,7 @@ fun HalamanManageProduct(
                 .padding(16.dp)
         ) {
 
-            /* ===== Kembali ke Login ===== */
+            /* ===== Logout ===== */
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onBackToLogin
@@ -55,6 +57,19 @@ fun HalamanManageProduct(
                 onClick = { onNavigateToForm(null) }
             ) {
                 Text("Tambah Produk")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            /* ===== MANAGE ORDER (ADMIN) ===== */
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                onClick = onNavigateToManageOrder
+            ) {
+                Text("Manage Order")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
