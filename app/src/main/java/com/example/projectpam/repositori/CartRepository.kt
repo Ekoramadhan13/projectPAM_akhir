@@ -3,8 +3,7 @@ package com.example.projectpam.repositori
 import com.example.projectpam.apiservice.ServiceApiEcommerce
 import com.example.projectpam.modeldata.Cart
 import com.example.projectpam.modeldata.request.AddCartRequest
-import com.example.projectpam.modeldata.response.CartListResponse
-import com.example.projectpam.modeldata.response.CartResponse
+import com.example.projectpam.modeldata.request.UpdateCartRequest
 import com.example.projectpam.utils.SessionManager
 
 class CartRepository(
@@ -12,34 +11,56 @@ class CartRepository(
     private val sessionManager: SessionManager
 ) {
 
-    private fun getAuthToken(): String {
-        val token = sessionManager.getToken()
-            ?: throw Exception("User belum login")
-        return "Bearer $token"
-    }
+    private fun token(): String =
+        "Bearer ${
+            sessionManager.getToken()
+                ?: throw Exception("User belum login")
+        }"
 
-    // Ambil semua cart
     suspend fun getCart(): List<Cart> {
-        val token = getAuthToken()
-        val response: CartListResponse = api.getCart(token)
-        return response.data
+        return api.getCart(token()).data
     }
 
-    // Tambah item ke cart
-    suspend fun addToCart(productId: Int, amount: Int = 1): CartResponse {
-        val token = getAuthToken()
-        return api.addToCart(token, AddCartRequest(productId, amount))
+    suspend fun addToCart(productId: Int, amount: Int = 1) {
+        api.addToCart(
+            token(),
+            AddCartRequest(
+                product_id = productId,
+                amount = amount
+            )
+        )
     }
 
-    // Update quantity / hapus
-    suspend fun updateCart(productId: Int, action: String): CartResponse {
-        val token = getAuthToken()
-        return api.updateCart(token, productId, action)
+    suspend fun increaseQty(productId: Int) {
+        api.updateCart(
+            token(),
+            UpdateCartRequest(
+                product_id = productId,
+                action = "add",
+                amount = 1
+            )
+        )
     }
 
-    // Hapus item
-    suspend fun removeCart(productId: Int) {
-        val token = getAuthToken()
-        api.removeCart(token, productId)
+    suspend fun decreaseQty(productId: Int) {
+        api.updateCart(
+            token(),
+            UpdateCartRequest(
+                product_id = productId,
+                action = "reduce",
+                amount = 1
+            )
+        )
+    }
+
+    suspend fun removeItem(productId: Int) {
+        api.removeCart(
+            token(),
+            UpdateCartRequest(
+                product_id = productId,
+                action = "remove",
+                amount = 0
+            )
+        )
     }
 }

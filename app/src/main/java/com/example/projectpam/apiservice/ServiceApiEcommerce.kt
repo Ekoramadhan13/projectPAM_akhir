@@ -11,9 +11,10 @@ import com.example.projectpam.modeldata.Cart
 import com.example.projectpam.modeldata.request.LoginRequest
 import com.example.projectpam.modeldata.request.RegisterRequest
 import com.example.projectpam.modeldata.request.AddCartRequest
+import com.example.projectpam.modeldata.request.UpdateCartRequest
 import com.example.projectpam.modeldata.response.CartListResponse
 import com.example.projectpam.modeldata.response.LoginResponse
-import com.example.projectpam.modeldata.response.CartResponse
+import com.example.projectpam.modeldata.response.MessageResponse
 
 interface ServiceApiEcommerce {
 
@@ -78,28 +79,31 @@ interface ServiceApiEcommerce {
         @Query("category") category: String?
     ): List<Product>
 
-    // ================= USER CART ================= ✅ FINAL
+    // ================= USER CART =================
+    // 🔥 WAJIB ADA
     @GET("api/user/cart")
-    suspend fun getCart(@Header("Authorization") token: String): CartListResponse
+    suspend fun getCart(
+        @Header("Authorization") token: String
+    ): CartListResponse
 
     @POST("api/user/cart/add")
     suspend fun addToCart(
         @Header("Authorization") token: String,
         @Body request: AddCartRequest
-    ): CartResponse
+    ): MessageResponse
 
     @PUT("api/user/cart/update")
     suspend fun updateCart(
         @Header("Authorization") token: String,
-        @Query("product_id") productId: Int,
-        @Query("action") action: String
-    ): CartResponse
+        @Body request: UpdateCartRequest
+    ): MessageResponse
 
-    @DELETE("api/user/cart/remove")
+    @HTTP(method = "DELETE", path = "api/user/cart/remove", hasBody = true)
     suspend fun removeCart(
         @Header("Authorization") token: String,
-        @Query("product_id") productId: Int
-    )
+        @Body request: UpdateCartRequest
+    ): MessageResponse
+    // 🔥 FIX UTAMA
 
     companion object {
         private const val BASE_URL = "http://10.0.2.2:3000/"

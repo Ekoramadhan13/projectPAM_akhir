@@ -8,8 +8,13 @@ data class CartListResponse(
     val data: List<Cart>
 )
 
+//@Serializable
+//data class CartResponse(
+    //val message: String,
+    //val data: Cart
+//)
+
 @Serializable
-data class CartResponse(
-    val message: String,
-    val data: Cart
+data class MessageResponse(
+    val message: String
 )

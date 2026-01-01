@@ -13,15 +13,14 @@ class CartViewModel(
 ) : ViewModel() {
 
     private val _cartItems = MutableStateFlow<List<Cart>>(emptyList())
-    val cartItems: StateFlow<List<Cart>> get() = _cartItems
+    val cartItems: StateFlow<List<Cart>> = _cartItems
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> get() = _isLoading
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> get() = _errorMessage
+    val errorMessage: StateFlow<String?> = _errorMessage
 
-    // Load semua item di cart
     fun loadCart() {
         _isLoading.value = true
         viewModelScope.launch {
@@ -30,67 +29,64 @@ class CartViewModel(
                 _errorMessage.value = null
             } catch (e: Exception) {
                 _cartItems.value = emptyList()
-                _errorMessage.value = e.message ?: "Gagal load cart"
+                _errorMessage.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    // Tambah produk ke cart
     fun addToCart(productId: Int, amount: Int = 1) {
-        _isLoading.value = true
         viewModelScope.launch {
             try {
                 repository.addToCart(productId, amount)
-                loadCart() // refresh cart setelah add
-                _errorMessage.value = null
+                loadCart()
             } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Gagal tambah ke cart"
-            } finally {
-                _isLoading.value = false
+                _errorMessage.value = e.message
             }
         }
     }
 
-    // Tambah quantity
     fun increase(productId: Int) {
-        updateCart(productId, "add")
-    }
-
-    // Kurangi quantity
-    fun decrease(productId: Int) {
-        updateCart(productId, "reduce")
-    }
-
-    // Hapus item dari cart
-    fun remove(productId: Int) {
-        updateCart(productId, "remove")
-    }
-
-    private fun updateCart(productId: Int, action: String) {
-        _isLoading.value = true
         viewModelScope.launch {
             try {
-                when (action) {
-                    "add", "reduce" -> repository.updateCart(productId, action)
-                    "remove" -> repository.removeCart(productId)
-                }
-                loadCart() // refresh cart setelah update
-                _errorMessage.value = null
+                repository.increaseQty(productId)
+                loadCart()
             } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Gagal update cart"
-            } finally {
-                _isLoading.value = false
+                _errorMessage.value = e.message
             }
         }
     }
 
-    // Hitung total harga
+    fun decrease(productId: Int) {
+        viewModelScope.launch {
+            try {
+                repository.decreaseQty(productId)
+                loadCart()
+            } catch (e: Exception) {
+                _errorMessage.value = e.message
+            }
+        }
+    }
+
+    fun remove(productId: Int) {
+        viewModelScope.launch {
+            try {
+                repository.removeItem(productId)
+                loadCart()
+            } catch (e: Exception) {
+                _errorMessage.value = e.message
+            }
+        }
+    }
+
     fun totalPrice(): Double {
-        return cartItems.value.sumOf {
-            val price = it.product?.price?.toDoubleOrNull() ?: 0.0
-            price * it.quantity
+        return cartItems.value.sumOf { cart ->
+            val price = cart.product?.price
+                ?.toString()
+                ?.toDoubleOrNull() ?: 0.0
+
+            price * cart.quantity
         }
     }
 }

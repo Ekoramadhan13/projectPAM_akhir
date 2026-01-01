@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -24,8 +25,9 @@ fun HalamanCart(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // Load cart saat komposisi pertama
-    LaunchedEffect(Unit) { viewModel.loadCart() }
+    LaunchedEffect(Unit) {
+        viewModel.loadCart()
+    }
 
     Scaffold(
         topBar = {
@@ -39,79 +41,114 @@ fun HalamanCart(
             )
         },
         bottomBar = {
-            Column(Modifier.padding(16.dp)) {
-                Text("Total: Rp ${viewModel.totalPrice()}")
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Total: Rp ${viewModel.totalPrice()}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = onCheckout,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = carts.isNotEmpty()
                 ) {
                     Text("Checkout")
                 }
             }
         }
     ) { padding ->
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (errorMessage != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Text("Error: $errorMessage")
-            }
-        } else {
-            LazyColumn(modifier = Modifier.padding(padding)) {
-                items(carts) { cart ->
-                    val product = cart.product
-                    if (product == null) return@items
 
-                    val productId = product.product_id ?: return@items
-                    val productName = product.name
-                    val productDesc = product.description
-                    val productPrice = product.price
-                    val quantity = cart.quantity
-                    val imageUrl = product.image_url
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
 
-                    Card(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            if (imageUrl.isNotEmpty()) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(imageUrl),
-                                    contentDescription = productName,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(150.dp)
+            errorMessage != null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Error: $errorMessage")
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                ) {
+                    items(carts) { cart ->
+
+                        val product = cart.product
+                        val productId = cart.product_id
+                        val quantity = cart.quantity
+
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+
+                                val imageUrl = product?.image_url.orEmpty()
+                                if (imageUrl.isNotEmpty()) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(imageUrl),
+                                        contentDescription = product?.name ?: "Produk",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(150.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+
+                                Text(
+                                    text = product?.name ?: "Produk tidak tersedia",
+                                    style = MaterialTheme.typography.titleMedium
                                 )
+
+                                Text("Harga: Rp ${product?.price ?: 0}")
+                                Text("Qty: $quantity")
+
                                 Spacer(modifier = Modifier.height(8.dp))
-                            }
 
-                            Text(productName, style = MaterialTheme.typography.titleMedium)
-                            Text("Deskripsi: $productDesc")
-                            Text("Harga: Rp $productPrice")
-                            Text("Qty: $quantity")
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = { viewModel.decrease(productId) },
+                                        enabled = quantity > 1
+                                    ) {
+                                        Text("-")
+                                    }
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                IconButton(onClick = { viewModel.decrease(productId) }) { Text("-") }
-                                IconButton(onClick = { viewModel.increase(productId) }) { Text("+") }
-                                Spacer(Modifier.weight(1f))
-                                TextButton(onClick = { viewModel.remove(productId) }) { Text("Hapus") }
+                                    IconButton(
+                                        onClick = { viewModel.increase(productId) }
+                                    ) {
+                                        Text("+")
+                                    }
+
+                                    Spacer(Modifier.weight(1f))
+
+                                    TextButton(
+                                        onClick = { viewModel.remove(productId) }
+                                    ) {
+                                        Text("Hapus")
+                                    }
+                                }
                             }
                         }
                     }
