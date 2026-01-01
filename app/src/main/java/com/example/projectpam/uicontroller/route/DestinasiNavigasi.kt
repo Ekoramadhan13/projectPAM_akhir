@@ -12,6 +12,10 @@ object DestinasiNavigasi {
     const val DETAIL_PRODUCT = "detail_product"
     const val CART = "cart"
 
+    const val CHECKOUT = "checkout"
+    const val ORDER_STATUS = "order_status"
+
+
     // Admin
     const val MANAGE_PRODUCT = "manage_product"
     const val FORM_PRODUCT = "form_product"

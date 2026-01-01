@@ -1,4 +1,10 @@
 package com.example.projectpam.modeldata.request
 
-class CheckoutRequest {
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class CheckoutRequest(
+    val address: String,
+    val payment_method: String,   // COD / EWALLET
+    val payment_provider: String? // DANA / OVO (nullable)
+)

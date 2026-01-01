@@ -8,13 +8,17 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 import com.example.projectpam.modeldata.Product
 import com.example.projectpam.modeldata.Cart
+import com.example.projectpam.modeldata.Order
 import com.example.projectpam.modeldata.request.LoginRequest
 import com.example.projectpam.modeldata.request.RegisterRequest
 import com.example.projectpam.modeldata.request.AddCartRequest
+import com.example.projectpam.modeldata.request.CheckoutRequest
 import com.example.projectpam.modeldata.request.UpdateCartRequest
 import com.example.projectpam.modeldata.response.CartListResponse
 import com.example.projectpam.modeldata.response.LoginResponse
 import com.example.projectpam.modeldata.response.MessageResponse
+import com.example.projectpam.modeldata.response.OrderListResponse
+import com.example.projectpam.modeldata.response.OrderResponse
 
 interface ServiceApiEcommerce {
 
@@ -104,6 +108,21 @@ interface ServiceApiEcommerce {
         @Body request: UpdateCartRequest
     ): MessageResponse
     // 🔥 FIX UTAMA
+
+    // ================= USER ORDER =================
+
+    @POST("api/orders/checkout")
+    suspend fun checkout(
+        @Header("Authorization") token: String,
+        @Body request: CheckoutRequest
+    ): OrderResponse
+
+    @GET("api/orders/my-orders")
+    suspend fun getMyOrders(
+        @Header("Authorization") token: String
+    ): OrderListResponse
+
+
 
     companion object {
         private const val BASE_URL = "http://10.0.2.2:3000/"

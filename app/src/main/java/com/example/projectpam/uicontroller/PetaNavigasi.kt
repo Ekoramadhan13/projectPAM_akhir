@@ -40,23 +40,37 @@ fun HostNavigasi(
     sessionManager: SessionManager,
     modifier: Modifier = Modifier
 ) {
+    val api = ServiceApiEcommerce.create()
 
-    // ===== ADMIN VIEWMODEL =====
-    val adminProductViewModel: AdminProductViewModel = viewModel(
-        initializer = { AdminProductViewModel(productRepository) }
-    )
+    /* ================= VIEWMODEL ================= */
 
-    // ===== USER VIEWMODEL =====
-    val productUserRepository = ProductUserRepository(ServiceApiEcommerce.create(), sessionManager)
-    val productUserViewModel: ProductUserViewModel = viewModel(
-        initializer = { ProductUserViewModel(productUserRepository) }
-    )
+    // ADMIN
+    val adminProductViewModel: AdminProductViewModel = viewModel {
+        AdminProductViewModel(productRepository)
+    }
 
-    // ===== CART VIEWMODEL =====
-    val cartRepository = CartRepository(ServiceApiEcommerce.create(), sessionManager)
-    val cartViewModel: CartViewModel = viewModel(
-        initializer = { CartViewModel(cartRepository) }
-    )
+    // USER PRODUCT
+    val productUserRepository = ProductUserRepository(api, sessionManager)
+    val productUserViewModel: ProductUserViewModel = viewModel {
+        ProductUserViewModel(productUserRepository)
+    }
+
+    // CART
+    val cartRepository = CartRepository(api, sessionManager)
+    val cartViewModel: CartViewModel = viewModel {
+        CartViewModel(cartRepository)
+    }
+
+    // ORDER
+    val orderRepository = OrderRepository(api, sessionManager)
+    val checkoutViewModel: CheckoutViewModel = viewModel {
+        CheckoutViewModel(orderRepository)
+    }
+    val orderStatusViewModel: OrderStatusViewModel = viewModel {
+        OrderStatusViewModel(orderRepository)
+    }
+
+    /* ================= NAVIGATION ================= */
 
     NavHost(
         navController = navController,
@@ -64,7 +78,7 @@ fun HostNavigasi(
         modifier = modifier
     ) {
 
-        /* ================= LOGIN ================= */
+        /* ============ LOGIN ============ */
         composable(DestinasiNavigasi.LOGIN) {
             HalamanLogin(
                 viewModel = authViewModel,
@@ -78,11 +92,13 @@ fun HostNavigasi(
                         popUpTo(DestinasiNavigasi.LOGIN) { inclusive = true }
                     }
                 },
-                onRegisterClick = { navController.navigate(DestinasiNavigasi.REGISTER) }
+                onRegisterClick = {
+                    navController.navigate(DestinasiNavigasi.REGISTER)
+                }
             )
         }
 
-        /* ================= REGISTER ================= */
+        /* ============ REGISTER ============ */
         composable(DestinasiNavigasi.REGISTER) {
             HalamanRegister(
                 viewModel = authViewModel,
@@ -95,11 +111,18 @@ fun HostNavigasi(
             )
         }
 
-        /* ================= HOME USER ================= */
+        /* ============ HOME USER ============ */
         composable(DestinasiNavigasi.HOME) {
             HalamanHome(
-                onNavigateToProducts = { navController.navigate(DestinasiNavigasi.HOME_PRODUCT) },
-                onNavigateToCart = { navController.navigate(DestinasiNavigasi.CART) }, // tombol keranjang di Home
+                onNavigateToProducts = {
+                    navController.navigate(DestinasiNavigasi.HOME_PRODUCT)
+                },
+                onNavigateToCart = {
+                    navController.navigate(DestinasiNavigasi.CART)
+                },
+                onNavigateToOrders = {
+                    navController.navigate(DestinasiNavigasi.ORDER_STATUS)
+                },
                 onBackToLogin = {
                     navController.navigate(DestinasiNavigasi.LOGIN) {
                         popUpTo(DestinasiNavigasi.HOME) { inclusive = true }
@@ -108,42 +131,77 @@ fun HostNavigasi(
             )
         }
 
-        /* ================= USER PRODUCT LIST ================= */
+        /* ============ USER PRODUCT LIST ============ */
         composable(DestinasiNavigasi.HOME_PRODUCT) {
             HalamanProductUser(
                 productUserViewModel = productUserViewModel,
                 onProductClick = { product ->
-                    navController.navigate("${DestinasiNavigasi.DETAIL_PRODUCT}/${product.product_id}")
+                    navController.navigate(
+                        "${DestinasiNavigasi.DETAIL_PRODUCT}/${product.product_id}"
+                    )
                 },
                 onBack = { navController.popBackStack() },
-                onGoToCart = { navController.navigate(DestinasiNavigasi.CART) } // optional tombol cart
+                onGoToCart = {
+                    navController.navigate(DestinasiNavigasi.CART)
+                }
             )
         }
 
-        /* ================= USER PRODUCT DETAIL ================= */
-        composable("${DestinasiNavigasi.DETAIL_PRODUCT}/{productId}") { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId")?.toIntOrNull() ?: return@composable
+        /* ============ USER PRODUCT DETAIL ============ */
+        composable("${DestinasiNavigasi.DETAIL_PRODUCT}/{productId}") { backStack ->
+            val productId = backStack.arguments
+                ?.getString("productId")
+                ?.toIntOrNull() ?: return@composable
+
             HalamanDetail(
                 productId = productId,
                 productViewModel = productUserViewModel,
                 cartViewModel = cartViewModel,
                 onBack = { navController.popBackStack() },
-                onGoToCart = { navController.navigate(DestinasiNavigasi.CART) } // navigasi ke cart setelah tambah
+                onGoToCart = {
+                    navController.navigate(DestinasiNavigasi.CART)
+                }
             )
         }
 
-        /* ================= USER CART ================= */
+        /* ============ CART ============ */
         composable(DestinasiNavigasi.CART) {
             HalamanCart(
                 viewModel = cartViewModel,
                 onCheckout = {
-                    // TODO: navigasi ke halaman Checkout
+                    navController.navigate(DestinasiNavigasi.CHECKOUT)
                 },
                 onBack = { navController.popBackStack() }
             )
         }
 
-        /* ================= ADMIN MANAGE PRODUCT ================= */
+        /* ============ CHECKOUT ============ */
+        composable(DestinasiNavigasi.CHECKOUT) {
+            HalamanCheckout(
+                viewModel = checkoutViewModel,
+                onSuccess = {
+                    navController.navigate(DestinasiNavigasi.ORDER_STATUS) {
+                        popUpTo(DestinasiNavigasi.HOME) { inclusive = false }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        /* ============ ORDER STATUS ============ */
+        composable(DestinasiNavigasi.ORDER_STATUS) {
+            HalamanStatusOrder(
+                viewModel = orderStatusViewModel,
+                onBackToHome = {
+                    navController.popBackStack(
+                        DestinasiNavigasi.HOME,
+                        inclusive = false
+                    )
+                }
+            )
+        }
+
+        /* ============ ADMIN MANAGE PRODUCT ============ */
         composable(DestinasiNavigasi.MANAGE_PRODUCT) {
             HalamanManageProduct(
                 viewModel = adminProductViewModel,
@@ -161,7 +219,7 @@ fun HostNavigasi(
             )
         }
 
-        /* ================= ADMIN FORM PRODUCT ================= */
+        /* ============ ADMIN FORM PRODUCT ============ */
         composable(DestinasiNavigasi.FORM_PRODUCT) {
             val product = navController.previousBackStackEntry
                 ?.savedStateHandle
